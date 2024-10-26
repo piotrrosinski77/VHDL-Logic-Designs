@@ -1,0 +1,23 @@
+# Ignoruj pliki binarne i tymczasowe GHDL
+*.o
+*.cf
+*.ghw
+*.vcd
+*.lst
+*.log
+
+# Ignoruj pliki wynikowe GTKWave
+*.gtkw
+*.sav
+
+# Ignoruj pliki tymczasowe edytora
+*~
+*.swp
+*.bak
+
+# Ignoruj pliki systemowe (np. dla systemu Windows i macOS)
+.DS_Store
+Thumbs.db
+
+# Ignoruj katalogi build i inne tymczasowe
+/build/
