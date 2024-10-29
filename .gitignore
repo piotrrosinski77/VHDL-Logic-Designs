@@ -6,6 +6,10 @@
 *.lst
 *.log
 
+*.exe
+*.wave
+*.txt
+
 # Ignoruj pliki wynikowe GTKWave
 *.gtkw
 *.sav
@@ -21,5 +25,3 @@ Thumbs.db
 
 # Ignoruj katalogi build i inne tymczasowe
 /build/
-
-*.exe

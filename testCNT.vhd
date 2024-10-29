@@ -1,8 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
-entity counter_tb is
-end counter_tb;
-architecture behavior of counter_tb is
+entity testCNT is
+end testCNT;
+architecture behavior of testCNT is
 component counter
 port(
 RESET : in std_logic;
