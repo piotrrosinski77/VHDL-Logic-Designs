@@ -21,3 +21,5 @@ Thumbs.db
 
 # Ignoruj katalogi build i inne tymczasowe
 /build/
+
+*.exe

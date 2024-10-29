@@ -23,6 +23,14 @@ begin
         B <= "1101";  
         wait for 10 ns;
 		
+		A <= "0001";  
+        B <= "0001";  
+        wait for 10 ns;
+		
+		A <= "0001";  
+        B <= "0010";  
+        wait for 10 ns;
+		
 	wait;
     end process;
 
