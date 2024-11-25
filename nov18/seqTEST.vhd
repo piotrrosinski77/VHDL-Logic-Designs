@@ -6,7 +6,7 @@ end seqTEST;
 
 architecture Behavioral of seqTEST is
 
-    component sq is
+    component sd is
         port (
             I      : in  STD_LOGIC;
             O      : out STD_LOGIC;
@@ -23,7 +23,7 @@ architecture Behavioral of seqTEST is
     constant CLK_PERIOD : time := 10 ns;  
 begin
 
-    uut: sm
+    uut: sd
         port map (
             I      => I_tb,
             O      => O_tb,

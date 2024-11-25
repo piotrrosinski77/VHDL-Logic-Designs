@@ -15,20 +15,20 @@ architecture Behavioral of exTEST is
         );
     end component;
 
-    signal I_tb      : STD_LOGIC;
-    signal O_tb      : STD_LOGIC;         
+    signal Z      : STD_LOGIC;
+    signal GPIO      : STD_LOGIC_VECTOR(7 downto 0);         
     signal CLK_tb    : STD_LOGIC;
     signal RESET_tb  : STD_LOGIC; 
 
     constant CLK_PERIOD : time := 10 ns;  
 begin
 
-    uut: sm
+    uut: ex
         port map (
-            I      => I_tb,
-            O      => O_tb,
-            CLK    => CLK_tb,
-            RESET  => RESET_tb
+            Z     => Z,
+            GPIO  => GPIO,
+            CLK   => CLK_tb,
+            RESET => RESET_tb
         );
 
     clock_process: process
