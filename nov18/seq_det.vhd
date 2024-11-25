@@ -12,7 +12,7 @@ end sd;
 
 architecture Behavioral of sd is
 
-    type state_t is (s0, s1, s2, s3, s4);
+    type state_t is (s0, s1, s2, s3, s4, s5);
     signal state : state_t;
 
 begin
@@ -22,18 +22,19 @@ begin
             state <= s0;
             O <= '0';
         
-		elsif rising_edge(CLK) then
+        elsif rising_edge(CLK) then
             
-            case state is
-                when s0 =>
+			case state is
+                
+				when s0 =>
                     if I = '1' then
                         state <= s1;
                     else
                         state <= s0;
                     end if;
                     O <= '0';
-                    
-                when s1 =>
+                
+				when s1 =>
                     if I = '0' then
                         state <= s2;
                     else
@@ -45,7 +46,7 @@ begin
                     if I = '1' then
                         state <= s3;
                     else
-                        state <= s0;
+                        state <= s2;
                     end if;
                     O <= '0';
 
@@ -53,13 +54,25 @@ begin
                     if I = '0' then
                         state <= s4;
                     else
-                        state <= s1;
+                        state <= s2;
                     end if;
                     O <= '0';
 
-                when s4 =>	
-                    state <= s0; 
+                when s4 =>
+                    state <= s5;
                     O <= '1';
+
+                when s5 =>
+                    if I = '1' then
+                        state <= s1;
+                        O <= '0';
+                    elsif I = '0' then
+                        state <= s2;
+                        O <= '1';
+                    else
+                        state <= s5;
+                        O <= '0';
+                    end if;
                     
                 when others =>
                     state <= s0;
