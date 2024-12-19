@@ -15,7 +15,10 @@ end ;
 
 architecture Behavioral of ex is
 
---file output_file : text is out "output.txt";
+-- file output_file : text is out "output.txt";
+
+-- 8-bitowy rejestr statusowy
+signal SREG : STD_LOGIC_VECTOR(7 downto 0); 
 
 -- pamiec ram
 type ram_array is array (0 to 31) of std_logic_vector(7 downto 0);
@@ -53,17 +56,52 @@ constant C_B 	: std_logic_vector(7 downto 0) := "00000011";
 
 
 -- pamiec ROM
-constant ROM: rom_t := (
-C_LDI & "001" & x"35", 
-C_LDI & "100" & x"79", 
-C_MOV & "101" & "001", 
-C_LDI & "001" & x"02", 
-C_ST & "001" & "100", 
-C_STS & "100" & x"05", 
-C_LD & "110" & "001", 
-C_LDS & "111" & x"05", 
-C_B & x"00", 
-others => x"0000");
+--constant ROM: rom_t := (
+--C_LDI & "001" & x"35", 
+--C_LDI & "100" & x"79", 
+--C_MOV & "101" & "001", 
+--C_LDI & "001" & x"02", 
+--C_ST & "001" & "100", 
+--C_STS & "100" & x"05", 
+--C_LD & "110" & "001", 
+--C_LDS & "111" & x"05", 
+--C_B & x"00", 
+--others => x"0000");
+
+
+-- pamiec ROM do testowania ALU
+constant ROM: rom_array := (
+	C_LDI & "001" & x"35",   	-- x35 do rej R1
+	C_LDI & "010" & x"12",		-- x12 do rej R2
+	C_ADC & "010" & "001",		-- dodanie zawartosci R1 do R2
+	C_ADCI & "010" & x"21",		-- dodanie stalej 21 do rej R2
+	
+	-- miejsce na przetestowanie pozostalych rozkazow
+	-- sprawdzic wplyw flagi C, rozkazy BSET i BCLR
+	
+	-- instrukcje zarzadzajace bitami (flagami) rejestru statusowego SREG
+	--1 BSET K, ustawia bity rejestru SREG w miejscach występowania jedynek w stalej K (SREG <- SREG or K)	
+	--2 BCLR K, zeruje bity rejestru SREG w miejscach występowania jedynej w stałej K (SREG <- SREG and not K)
+	
+	-- instrukcje arytmetyczne
+	--1 ADC Rd, Rs, dodaje do rejestru Rd rejestr Rs oraz bit przeniesienia C (Rd <- Rd + K + C)
+	--2 ADCI Rd, K, dodaje do rejestru Rd stałą 8-bitową K i bit przeniesienia C (Rd <- Rd + K + C)
+	--3 SBC Rd, Rs, odejmuje od rejestru Rd rejestr Rs i bit przeniesienia C (Rd <- Rd - Rs - C)
+	--4 SBCI Rd, Rs, odejmuje od rejestru Rd stałą 8-bitową K i bit przeniesienia C (Rd <- Rd - K - C)
+	--5 MUL Rd, Rs, mnozy bez znaku rejestry Rs i Rd a wynik zapisuje w rejestrach Rd+1:Rd (Rd+1:Rd <- Rd*Rs)
+	--6 MULS Rd, Rs, mnozy ze znakiem rejestry Rs i Rd a wynik zapisuje w rejestrach Rd+1:Rd (Rd+1:Rd <- Rd*Rs)
+	
+	-- instruckje logiczne
+	--1 AND Rd, Rs, iloczyn logiczny rejestrow Rs i Rd (Rd <- Rd and Rs)
+	--2 ANDI Rd, K, iloczyn logiczny rejestru Rd i stałej 8-bitowej K (Rd <- Rd and K)
+	--3 OR Rd, Rs, suma logiczna rejestrów Rs i Rd (Rd <- Rd or Rs)
+	--4 ORI Rd, K, suma logiczna rejestru Rd i stałej 8-bitowej K (Rd <- Rd or K)
+	--5 XOR Rd, Rs, alternatywa rozłączna rejestrow Rs i Rd (Rd <- Rd xor Rs)
+	--6 XORI Rd, K, alternatywa rozłączna rejestru Rd i stałej 8-bitowej K (Rd <- Rd xor K)
+	
+	
+	C_B & x"00",
+	others => x"0000");
 
 
 -- stan maszyny (enum)
@@ -73,8 +111,15 @@ signal state : state_type := S_FETCH;
 signal PC      : std_logic_vector(15 downto 0);		-- licznik programu
 signal IR      : std_logic_vector(15 downto 0);		-- aktualnie wykonywany rozkaz
 
+-- zmienne dzieki natychmiastowemu przypisywaniu wartosci moga byc wykorzystywane wielokrotnie w jednym obrebie kodu
+-- generuja logike kombinacyjna
+
 begin
     process(CLK, RESET)
+	
+	variable src1, src2: signed(7 downto 0);		-- dwa argumenty pochodzace z bloku rejestrow lub dekodera instrukcji
+	variable res: signed(8 downto 0);				-- wynik operacji zapisywany do rejestrow ogolnego przeznaczenia
+	
     begin
         if RESET = '1' then
             state <= S_FETCH;
