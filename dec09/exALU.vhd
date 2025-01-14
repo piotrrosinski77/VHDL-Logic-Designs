@@ -43,7 +43,7 @@ architecture Behavioral of ex is
         (opcode_mask => "0000000111------"),	-- ADC
         (opcode_mask => "00011-----------"),	-- ADCI
         (opcode_mask => "0000001000------"), 	-- SBC
-        (opcode_mask => "0000001001------"),	-- SBCI
+        (opcode_mask => "10000-----------"),	-- SBCI
         (opcode_mask => "00111-----------"),	-- MUL
         (opcode_mask => "01000-----------"),	-- MULS
         (opcode_mask => "01001-----------"),	-- AND
@@ -69,9 +69,9 @@ architecture Behavioral of ex is
     constant C_ADC	: std_logic_vector(9 downto 0) := "0000000111";
     constant C_ADCI	: std_logic_vector(4 downto 0) := "00011";
     constant C_SBC	: std_logic_vector(9 downto 0) := "0000001000";
-    constant C_SBCI	: std_logic_vector(9 downto 0) := "0000001001";
-    constant C_MUL	: std_logic_vector(4 downto 0) := "00111";
-    constant C_MULS	: std_logic_vector(4 downto 0) := "01000";
+    constant C_SBCI	: std_logic_vector(4 downto 0) := "10000";
+    constant C_MUL	: std_logic_vector(9 downto 0) := "0011100000";
+    constant C_MULS	: std_logic_vector(9 downto 0) := "0100000000";
 
     -- logiczne
     constant C_AND	: std_logic_vector(4 downto 0) := "01001";
@@ -91,11 +91,9 @@ architecture Behavioral of ex is
         C_ADC & "010" & "001",		-- dodanie zawartosci rejestru R1 do rejestru R2
         C_ADCI & "010" & x"21", 	-- dodanie stalej 21h do rejestru R2
 		
-		
-		
 		C_SBC & "010" & "001",  	-- odejmuje zawartosc rejestru R1 od R2
 		C_LDI & "011" &	x"15",		-- wpisuje wartosc 15 do rejestru R3
-		C_SBCI & "011" & x"01",  	-- odejmuje od rejestru R3 wartosc 13		
+		C_SBCI & "011" & x"13",		-- odejmuje od rejestru R3 wartosc 13		
 		C_LDI & "101" & x"23",		-- wpisuje wartosc 23 do rejestru R5
 		C_MUL & "011" & "101",		-- mnozy ze soba rejestry R3 i R5 bez znaku
 		C_MULS & "011" & "101",		-- mnozy ze soba rejestry R3 i R5 ze znakiem
@@ -137,7 +135,7 @@ architecture Behavioral of ex is
 begin
     process(CLK, RESET)
         variable src1, src2: signed(7 downto 0);     		  -- dwa argumenty pochodzace z bloku rejestrow lub dekodera instrukcji
-        variable res: signed(8 downto 0);             		  -- wynik operacji zapisywany do rejestrow ogolnego przeznaczenia
+        variable res: signed(8 downto 0);             			  -- wynik operacji zapisywany do rejestrow ogolnego przeznaczenia
         variable temp_res: signed(15 downto 0);       		  -- 16-bitowy wynik dla mnożenia
         variable temp_R: reg_array;                   		  -- Tymczasowy rejestr R
 		variable temp_sreg: std_logic_vector(7 downto 0); 	  -- zmienna do przechowywania wartości SREG
@@ -240,9 +238,9 @@ begin
                                     res := ('0' & src1) - ('0' & src2) - res;
 
                                     temp_sreg(0) := res(8);
-
-                                    temp_sreg(0) := (src1(7) and not src2(7)) or (src1(7) and not res(7)) or (not src2(7) and not res(7));
-
+									
+                                    temp_sreg(0) := (not src1(7) and src2(7)) or (not src1(7) and res(7)) or (src2(7) and res(7));
+									
                                     if res(7 downto 0) = x"00" then
                                         temp_sreg(1) := '1';
                                     else
@@ -256,7 +254,7 @@ begin
                                 when 10 => -- SBCI (Subtract Immediate with Carry)
 
                                     src1 := signed(temp_R(to_integer(unsigned(IR(10 downto 8)))));
-                                    src2 := signed(IR(7 downto 0));
+                                    src2 := signed((IR(7 downto 0)));
 
                                     res := ("00000000" & temp_sreg(0));
 
