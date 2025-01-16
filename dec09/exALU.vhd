@@ -46,12 +46,15 @@ architecture Behavioral of ex is
         (opcode_mask => "10000-----------"),	-- SBCI
         (opcode_mask => "00111-----------"),	-- MUL
         (opcode_mask => "01000-----------"),	-- MULS
-        (opcode_mask => "01001-----------"),	-- AND
-        (opcode_mask => "0000001011------"),	-- ANDI
-        (opcode_mask => "01011-----------"), 	-- OR
-        (opcode_mask => "0000001111------"),	-- ORI
-        (opcode_mask => "01111-----------"),	-- XOR
-        (opcode_mask => "0000011111------")		-- XORI
+        --(opcode_mask => "01001-----------"),	-- AND
+		(opcode_mask => "0000001011------"),	-- AND
+        (opcode_mask => "01001-----------"),	-- ANDI
+        --(opcode_mask => "01011-----------"), 	-- OR
+		(opcode_mask => "0000001111------"), 	-- OR
+        (opcode_mask => "01011-----------"),	-- ORI
+        --(opcode_mask => "01111-----------"),	-- XOR
+		(opcode_mask => "0000011111------"),	-- XOR
+        (opcode_mask => "01111-----------")		-- XORI
     );
 
     constant C_LDI  : std_logic_vector(4 downto 0) := "00001";
@@ -74,13 +77,15 @@ architecture Behavioral of ex is
     constant C_MULS	: std_logic_vector(9 downto 0) := "0100000000";
 
     -- logiczne
-    constant C_AND	: std_logic_vector(4 downto 0) := "01001";
-    constant C_ANDI	: std_logic_vector(9 downto 0) := "0000001011";
-    constant C_OR	: std_logic_vector(4 downto 0) := "01011";
-    constant C_ORI	: std_logic_vector(9 downto 0) := "0000001111";
-    constant C_XOR	: std_logic_vector(4 downto 0) := "01111";
-    constant C_XORI	: std_logic_vector(9 downto 0) := "0000011111";
-
+    --constant C_AND	: std_logic_vector(4 downto 0) := "01001";
+	constant C_AND	: std_logic_vector(9 downto 0) := "0000001011";
+    constant C_ANDI	: std_logic_vector(4 downto 0) := "01001";
+    --constant C_OR	: std_logic_vector(4 downto 0) := "01011";
+	constant C_OR : std_logic_vector(9 downto 0) := "0000001111";
+    constant C_ORI	: std_logic_vector(4 downto 0) := "01011";
+    --constant C_XOR	: std_logic_vector(4 downto 0) := "01111";
+	constant C_XOR	: std_logic_vector(9 downto 0) := "0000011111";
+    constant C_XORI	: std_logic_vector(4 downto 0) := "01111";
     constant C_B 	: std_logic_vector(7 downto 0) := "00000011";
 
     -- pamiec ROM
@@ -98,6 +103,13 @@ architecture Behavioral of ex is
 		C_MUL & "011" & "101",		-- mnozy ze soba rejestry R3 i R5 bez znaku
 		C_LDI & "111" & "11111110",	-- wpisuje wartosc -2 do rejestru R7
 		C_MULS & "111" & "101",		-- mnozy ze soba rejestry R7 i R5 ze znakiem
+		
+		C_AND & "010" & "001",		-- iloczyn logiczny rejestrow R2 i R1 
+		C_ANDI & "010" & x"15",		-- iloczyn logiczny rejestru R2 i stałej 15
+		C_OR & "010" & "001",		-- suma logiczba rejestrow R2 i R1
+		C_ORI & "010" & x"15",		-- suma logiczna rejestru R2 i stałej 15
+		C_XOR & "010" & "001",		-- alternatywa rozłączna R2 i R1 
+		C_XORI & "010" & x"15",		-- alternatywa rozłączna R2 i stałej 15
 
         -- miejsce na przetestowanie pozostalych rozkazow
         -- sprawdzic wplyw flagi C, rozkazy BSET i BCLR
