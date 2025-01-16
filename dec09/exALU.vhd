@@ -96,7 +96,8 @@ architecture Behavioral of ex is
 		C_SBCI & "011" & x"13",		-- odejmuje od rejestru R3 wartosc 13		
 		C_LDI & "101" & x"23",		-- wpisuje wartosc 23 do rejestru R5
 		C_MUL & "011" & "101",		-- mnozy ze soba rejestry R3 i R5 bez znaku
-		C_MULS & "011" & "101",		-- mnozy ze soba rejestry R3 i R5 ze znakiem
+		C_LDI & "111" & "11111110",	-- wpisuje wartosc -2 do rejestru R7
+		C_MULS & "111" & "101",		-- mnozy ze soba rejestry R7 i R5 ze znakiem
 
         -- miejsce na przetestowanie pozostalych rozkazow
         -- sprawdzic wplyw flagi C, rozkazy BSET i BCLR
@@ -262,7 +263,7 @@ begin
 
                                     temp_sreg(0) := res(8);
 
-                                    temp_sreg(0) := (src1(7) and not src2(7)) or (src1(7) and not res(7)) or (not src2(7) and not res(7));
+                                    temp_sreg(0) := (not src1(7) and src2(7)) or (not src1(7) and res(7)) or (src2(7) and 	res(7));
 
                                     if res(7 downto 0) = x"00" then
                                         temp_sreg(1) := '1';
@@ -282,9 +283,11 @@ begin
 									temp_res := src1 * src2;
 
 									temp_R(to_integer(unsigned(IR(5 downto 3)))) := std_logic_vector(temp_res(7 downto 0));
+									
 									if to_integer(unsigned(IR(5 downto 3))) + 1 < 8 then
 										temp_R(to_integer(unsigned(IR(5 downto 3)) + 1)) := std_logic_vector(temp_res(15 downto 8));
 									end if;
+									
 									R <= temp_R; 
 
 								when 12 => -- MULS (Multiply Signed)
@@ -295,9 +298,11 @@ begin
 									temp_res := src1 * src2;
 									
 									temp_R(to_integer(unsigned(IR(5 downto 3)))) := std_logic_vector(temp_res(7 downto 0));
+									
 									if to_integer(unsigned(IR(5 downto 3))) + 1 < 8 then
 										temp_R(to_integer(unsigned(IR(5 downto 3)) + 1)) := std_logic_vector(temp_res(15 downto 8));
 									end if;
+									
 									R <= temp_R; 
 
 								when 13 => -- AND
