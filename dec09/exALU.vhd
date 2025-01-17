@@ -46,13 +46,10 @@ architecture Behavioral of ex is
         (opcode_mask => "10000-----------"),	-- SBCI
         (opcode_mask => "00111-----------"),	-- MUL
         (opcode_mask => "01000-----------"),	-- MULS
-        --(opcode_mask => "01001-----------"),	-- AND
 		(opcode_mask => "0000001011------"),	-- AND
         (opcode_mask => "01001-----------"),	-- ANDI
-        --(opcode_mask => "01011-----------"), 	-- OR
-		(opcode_mask => "0000001111------"), 	-- OR
+		(opcode_mask => "0001001111------"), 	-- OR
         (opcode_mask => "01011-----------"),	-- ORI
-        --(opcode_mask => "01111-----------"),	-- XOR
 		(opcode_mask => "0000011111------"),	-- XOR
         (opcode_mask => "01111-----------")		-- XORI
     );
@@ -77,13 +74,10 @@ architecture Behavioral of ex is
     constant C_MULS	: std_logic_vector(9 downto 0) := "0100000000";
 
     -- logiczne
-    --constant C_AND	: std_logic_vector(4 downto 0) := "01001";
 	constant C_AND	: std_logic_vector(9 downto 0) := "0000001011";
     constant C_ANDI	: std_logic_vector(4 downto 0) := "01001";
-    --constant C_OR	: std_logic_vector(4 downto 0) := "01011";
-	constant C_OR : std_logic_vector(9 downto 0) := "0000001111";
+	constant C_OR : std_logic_vector(9 downto 0) := "0001001111";
     constant C_ORI	: std_logic_vector(4 downto 0) := "01011";
-    --constant C_XOR	: std_logic_vector(4 downto 0) := "01111";
 	constant C_XOR	: std_logic_vector(9 downto 0) := "0000011111";
     constant C_XORI	: std_logic_vector(4 downto 0) := "01111";
     constant C_B 	: std_logic_vector(7 downto 0) := "00000011";
@@ -336,7 +330,7 @@ begin
 
 									temp_R(to_integer(unsigned(IR(10 downto 8)))) := R(to_integer(unsigned(IR(10 downto 8)))) or IR(7 downto 0);
 									R <= temp_R; 
-
+		
 								when 17 => -- XOR
 
 									temp_R(to_integer(unsigned(IR(5 downto 3)))) := R(to_integer(unsigned(IR(5 downto 3)))) xor R(to_integer(unsigned(IR(2 downto 0))));
