@@ -31,7 +31,7 @@ architecture Behavioral of ex is
         opcode_mask : std_logic_vector(15 downto 0); -- pełna maska
     end record;
 
-    type instruction_array_t is array (0 to 18) of instruction_t;
+    type instruction_array_t is array (0 to 20) of instruction_t;
     constant INSTRUCTIONS: instruction_array_t := (
         (opcode_mask => "00001-----------"), 	-- LDI
         (opcode_mask => "0000000000------"), 	-- MOV
@@ -51,7 +51,9 @@ architecture Behavioral of ex is
 		(opcode_mask => "0001001111------"), 	-- OR
         (opcode_mask => "01011-----------"),	-- ORI
 		(opcode_mask => "0000011111------"),	-- XOR
-        (opcode_mask => "01111-----------")		-- XORI
+        (opcode_mask => "01111-----------"), 	-- XORI
+		(opcode_mask => "00100001--------"),	-- BSET
+		(opcode_mask => "10100100--------")		-- BCLR
     );
 
     constant C_LDI  : std_logic_vector(4 downto 0) := "00001";
@@ -62,8 +64,8 @@ architecture Behavioral of ex is
     constant C_LDS  : std_logic_vector(4 downto 0) := "01010";
 
     -- zarzadzajace bitami (flagami) rejestru statusowego SREG
-    constant BSET	: std_logic_vector(7 downto 0) := "00000001";
-    constant BCLR	: std_logic_vector(7 downto 0) := "00000010";
+    constant B_SET	: std_logic_vector(7 downto 0) := "00100001";
+    constant B_CLR	: std_logic_vector(7 downto 0) := "10100100";
 
     -- arytmetyczne
     constant C_ADC	: std_logic_vector(9 downto 0) := "0000000111";
@@ -104,6 +106,11 @@ architecture Behavioral of ex is
 		C_ORI & "010" & x"15",		-- suma logiczna rejestru R2 i stałej 15
 		C_XOR & "010" & "001",		-- alternatywa rozłączna R2 i R1 
 		C_XORI & "010" & x"15",		-- alternatywa rozłączna R2 i stałej 15
+		
+		C_LDI & "010" & x"01",		-- wpisanie wartosci 1 do rejestru R2 
+		C_ADCI & "010" & x"FF",		-- dodanie stalej FF do rejestru R2
+		B_CLR & "00000000",			-- wyczyszczenie SREG
+		B_SET & "11111111",			-- ustawienie SREG
 
         -- miejsce na przetestowanie pozostalych rozkazow
         -- sprawdzic wplyw flagi C, rozkazy BSET i BCLR
@@ -341,6 +348,16 @@ begin
 									temp_R(to_integer(unsigned(IR(10 downto 8)))) := R(to_integer(unsigned(IR(10 downto 8)))) xor IR(7 downto 0);
 									R <= temp_R;
 
+								when 19 => -- CLR
+								
+									temp_sreg := "00000000";
+									SREG <= temp_sreg;
+									
+								when 20 => -- SET
+								
+									temp_sreg := "11111111";
+									SREG <= temp_sreg;
+								
 								when others => 
 									null;
 									
