@@ -149,8 +149,9 @@ architecture Behavioral of ex is
 begin
     process(CLK, RESET)
         variable src1, src2: signed(7 downto 0);     		  -- dwa argumenty pochodzace z bloku rejestrow lub dekodera instrukcji
-        variable res: signed(8 downto 0);             			  -- wynik operacji zapisywany do rejestrow ogolnego przeznaczenia
-        variable temp_res: signed(15 downto 0);       		  -- 16-bitowy wynik dla mnożenia
+        variable res: signed(8 downto 0);             		  -- wynik operacji zapisywany do rejestrow ogolnego przeznaczenia
+        variable res_log: signed (7 downto 0);				  -- wynik operacji logicznych (nie uwzgledniaja SREG)
+		variable temp_res: signed(15 downto 0);       		  -- 16-bitowy wynik dla mnożenia
         variable temp_R: reg_array;                   		  -- Tymczasowy rejestr R
 		variable temp_sreg: std_logic_vector(7 downto 0); 	  -- zmienna do przechowywania wartości SREG
 		
@@ -294,6 +295,14 @@ begin
 									src2 := signed(R(to_integer(unsigned(IR(2 downto 0)))));
 
 									temp_res := src1 * src2;
+									
+									temp_sreg(0) := temp_res(15);
+									
+									if temp_res(15 downto 0) = x"0000" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
 
 									temp_R(to_integer(unsigned(IR(5 downto 3)))) := std_logic_vector(temp_res(7 downto 0));
 									
@@ -302,6 +311,7 @@ begin
 									end if;
 									
 									R <= temp_R; 
+									SREG <= temp_sreg;
 
 								when 12 => -- MULS (Multiply Signed)
 
@@ -310,43 +320,128 @@ begin
 
 									temp_res := src1 * src2;
 									
+									temp_sreg(0) := temp_res(15);
+									
+									if temp_res(15 downto 0) = x"0000" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
+									
 									temp_R(to_integer(unsigned(IR(5 downto 3)))) := std_logic_vector(temp_res(7 downto 0));
 									
 									if to_integer(unsigned(IR(5 downto 3))) + 1 < 8 then
 										temp_R(to_integer(unsigned(IR(5 downto 3)) + 1)) := std_logic_vector(temp_res(15 downto 8));
 									end if;
 									
-									R <= temp_R; 
+									R <= temp_R;
+									SREG <= temp_sreg;
 
 								when 13 => -- AND
-
-									temp_R(to_integer(unsigned(IR(5 downto 3)))) := R(to_integer(unsigned(IR(5 downto 3)))) and R(to_integer(unsigned(IR(2 downto 0))));
+									
+									src1 := signed(temp_R(to_integer(unsigned(IR(5 downto 3))))); 
+									src2 := signed(temp_R(to_integer(unsigned(IR(2 downto 0)))));
+									
+									res_log := src1 and src2;
+									
+									if res_log(7 downto 0) = x"00" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
+									
+									--temp_sreg(0) := (src1(7) and src2(7)) or (src1(7) and not res(7)) or (src2(7) and not res(7));
+									
+									temp_R(to_integer(unsigned(IR(5 downto 3)))) := std_logic_vector(res_log(7 downto 0));
 									R <= temp_R; 
 
 								when 14 => -- ANDI
 
-									temp_R(to_integer(unsigned(IR(10 downto 8)))) := R(to_integer(unsigned(IR(10 downto 8)))) and IR(7 downto 0);
+									src1 := signed(temp_R(to_integer(unsigned(IR(10 downto 8)))));
+                                    src2 := signed((IR(7 downto 0)));
+									
+									res_log := src1 and src2;
+									
+									if res_log(7 downto 0) = x"00" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
+									
+									--temp_sreg(0) := (src1(7) and src2(7)) or (src1(7) and not res(7)) or (src2(7) and not res(7));
+									
+									temp_R(to_integer(unsigned(IR(10 downto 8)))) := std_logic_vector(res_log(7 downto 0));
 									R <= temp_R; 
 
 								when 15 => -- OR
+									
+									src1 := signed(temp_R(to_integer(unsigned(IR(5 downto 3))))); 
+									src2 := signed(temp_R(to_integer(unsigned(IR(2 downto 0)))));
+									
+									res_log := src1 or src2;
+									
+									if res_log(7 downto 0) = x"00" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
+									
+									--temp_sreg(0) := (src1(7) and src2(7)) or (src1(7) and not res(7)) or (src2(7) and not res(7));
 
-									temp_R(to_integer(unsigned(IR(5 downto 3)))) := R(to_integer(unsigned(IR(5 downto 3)))) or R(to_integer(unsigned(IR(2 downto 0))));
-									R <= temp_R; 
+									temp_R(to_integer(unsigned(IR(5 downto 3)))) := std_logic_vector(res_log(7 downto 0));
+									R <= temp_R;
+									SREG <= temp_sreg;
 
 								when 16 => -- ORI
+								
+									src1 := signed(temp_R(to_integer(unsigned(IR(10 downto 8)))));
+                                    src2 := signed((IR(7 downto 0)));
+									
+									res_log := src1 or src2;
+									
+									if res_log(7 downto 0) = x"00" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
 
-									temp_R(to_integer(unsigned(IR(10 downto 8)))) := R(to_integer(unsigned(IR(10 downto 8)))) or IR(7 downto 0);
-									R <= temp_R; 
+									temp_R(to_integer(unsigned(IR(10 downto 8)))) := std_logic_vector(res_log(7 downto 0));
+									R <= temp_R;
+									SREG <= temp_sreg;
 		
 								when 17 => -- XOR
+								
+									src1 := signed(temp_R(to_integer(unsigned(IR(5 downto 3))))); 
+									src2 := signed(temp_R(to_integer(unsigned(IR(2 downto 0)))));
+									
+									res_log := src1 xor src2;
+									
+									if res_log(7 downto 0) = x"00" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
 
-									temp_R(to_integer(unsigned(IR(5 downto 3)))) := R(to_integer(unsigned(IR(5 downto 3)))) xor R(to_integer(unsigned(IR(2 downto 0))));
-									R <= temp_R; 
+									temp_R(to_integer(unsigned(IR(5 downto 3)))) := std_logic_vector(res_log(7 downto 0));
+									R <= temp_R;
+									SREG <= temp_sreg;
 
 								when 18 => -- XORI
+								
+									src1 := signed(temp_R(to_integer(unsigned(IR(10 downto 8)))));
+                                    src2 := signed((IR(7 downto 0)));
+									
+									res_log := src1 xor src2;
+									
+									if res_log(7 downto 0) = x"00" then
+                                        temp_sreg(1) := '1';
+                                    else
+                                        temp_sreg(1) := '0';
+                                    end if;
 
-									temp_R(to_integer(unsigned(IR(10 downto 8)))) := R(to_integer(unsigned(IR(10 downto 8)))) xor IR(7 downto 0);
+									temp_R(to_integer(unsigned(IR(10 downto 8)))) := std_logic_vector(res_log(7 downto 0));
 									R <= temp_R;
+									SREG <= temp_sreg;
 
 								when 19 => -- CLR
 								
