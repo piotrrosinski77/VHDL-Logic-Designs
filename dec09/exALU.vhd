@@ -151,7 +151,7 @@ begin
         variable src1, src2: signed(7 downto 0);     		  -- dwa argumenty pochodzace z bloku rejestrow lub dekodera instrukcji
         variable res: signed(8 downto 0);             		  -- wynik operacji zapisywany do rejestrow ogolnego przeznaczenia
         variable res_log: signed (7 downto 0);				  -- wynik operacji logicznych (nie uwzgledniaja SREG)
-		variable temp_res: signed(15 downto 0);       		  -- 16-bitowy wynik dla mnożenia
+		variable temp_res: signed(16 downto 0);       		  -- 16-bitowy wynik dla mnożenia
         variable temp_R: reg_array;                   		  -- Tymczasowy rejestr R
 		variable temp_sreg: std_logic_vector(7 downto 0); 	  -- zmienna do przechowywania wartości SREG
 		
@@ -294,9 +294,9 @@ begin
 									src1 := signed(R(to_integer(unsigned(IR(5 downto 3)))));
 									src2 := signed(R(to_integer(unsigned(IR(2 downto 0)))));
 
-									temp_res := src1 * src2;
+									temp_res := ('0' & src1 * src2);
 									
-									temp_sreg(0) := temp_res(15);
+									-- temp_sreg(0) := temp_res(16);
 									
 									if temp_res(15 downto 0) = x"0000" then
                                         temp_sreg(1) := '1';
@@ -318,9 +318,9 @@ begin
 									src1 := signed(R(to_integer(unsigned(IR(5 downto 3)))));
 									src2 := signed(R(to_integer(unsigned(IR(2 downto 0)))));
 
-									temp_res := src1 * src2;
-									
-									temp_sreg(0) := temp_res(15);
+									temp_res := ('0' & src1 * src2)	;
+												
+									-- temp_sreg(0) := temp_res(16);
 									
 									if temp_res(15 downto 0) = x"0000" then
                                         temp_sreg(1) := '1';
